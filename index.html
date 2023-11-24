@@ -1,0 +1,157 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regigran</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4">
+        <img src="../cardapio/Imagem do WhatsApp de 2023-11-24 à(s) 11.31.19_8f3bc64e.jpg" alt="">
+        <h1 class="text-4xl font-bold my-8">Foulder</h1>
+        <div id="menu" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Items will be inserted here -->
+        </div>
+        <div id="cart" class="mt-8 hidden">
+            <h2 class="text-2xl font-bold mb-4">Carrinho</h2>
+            <div id="cartItems">
+                <!-- Cart items will be inserted here -->
+            </div>
+            <div class="mt-4">
+                <label for="deliveryMethod" class="block text-sm font-medium text-gray-700">Método de entrega</label>
+                <select id="deliveryMethod" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="delivery">Entrega</option>
+                    <option value="pickup">Retirada</option>
+                </select>
+            </div>
+            <div id="addressField" class="mt-4 hidden">
+                <label for="address" class="block text-sm font-medium text-gray-700">Endereço de retirada</label>
+                <input type="text" id="address" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div class="mt-4">
+                <label for="paymentMethod" class="block text-sm font-medium text-gray-700">Método de pagamento</label>
+                <select id="paymentMethod" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="pix">PIX</option>
+                    <option value="creditCard">Cartão de crédito</option>
+                    <option value="debitCard">Cartão de débito</option>
+                </select>
+            </div>
+            <button id="checkoutButton" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-8">
+                Finalizar Pedido
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const menuItems = [
+
+            { id: 1, name: 'Preto São Gabriel', price: 10.90, image: '../cardapio/pedra.jpg' },
+            
+        ];
+
+        const cart = {};
+
+        function addToCart(id, quantity) {
+            if (!cart[id]) {
+                cart[id] = quantity;
+            } else {
+                cart[id] += quantity;
+            }
+            alert('Produto adicionado ao carrinho!');
+            updateCart();
+        }
+
+        function removeFromCart(id, quantity) {
+            if (cart[id]) {
+                cart[id] -= quantity;
+                if (cart[id] <= 0) {
+                    delete cart[id];
+                }
+            }
+            updateCart();
+        }
+
+        function deleteFromCart(id) {
+            delete cart[id];
+            updateCart();
+        }
+
+        function updateCart() {
+            document.getElementById('cart').classList.remove('hidden');
+            let total = 0;
+            document.getElementById('cartItems').innerHTML = Object.keys(cart).map(id => {
+                const item = menuItems.find(item => item.id == id);
+                total += item.price * cart[id];
+                return `
+                    <div class="flex justify-between my-2">
+                        <div>
+                            <span>${item.name} x ${cart[id]}</span>
+                            <button onclick="addToCart(${item.id}, 1)" class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">
+                                +
+                            </button>
+                            <button onclick="removeFromCart(${item.id}, 1)" class="ml-2 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">
+                                -
+                            </button>
+                            <button onclick="deleteFromCart(${item.id})" class="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                                x
+                            </button>
+                        </div>
+                        <span>R$ ${(item.price * cart[id]).toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('cartItems').innerHTML += `
+                <div class="flex justify-between my-2 font-bold">
+                    <span>Total</span>
+                    <span>R$ ${total.toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        function generateWhatsAppLink() {
+            let message = 'Olá, gostaria de fazer o pedido:\n';
+            for (const id in cart) {
+                const item = menuItems.find(item => item.id == id);
+                message += `${item.name} - Quantidade: ${cart[id]}\n`;
+            }
+            const deliveryMethod = document.getElementById('deliveryMethod').value;
+            message += `Método de entrega: ${deliveryMethod}\n`;
+            if (deliveryMethod === 'pickup') {
+                const address = document.getElementById('address').value;
+                message += `Endereço de retirada: ${address}\n`;
+            }
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            message += `Método de pagamento: ${paymentMethod}\n`;
+            return `https://wa.me/5511942131306?text=${encodeURIComponent(message)}`;
+        }
+
+        document.getElementById('menu').innerHTML = menuItems.map(item => `
+            <div class="border rounded-lg overflow-hidden">
+                <img src="${item.image}" alt="${item.name}">
+                <div class="p-4">
+                    <h2 class="font-bold">${item.name}</h2>
+                    <p>R$ ${item.price.toFixed(2)}</p>
+                    <button onclick="addToCart(${item.id}, 1)" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Adicionar ao Carrinho
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('checkoutButton').addEventListener('click', function() {
+            window.location.href = generateWhatsAppLink();
+        });
+
+        document.getElementById('deliveryMethod').addEventListener('change', function() {
+            if (this.value === 'pickup') {
+                document.getElementById('addressField').classList.remove('hidden');
+            } else {
+                document.getElementById('addressField').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
